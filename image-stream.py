@@ -10,7 +10,7 @@ print("Python version : ", sys.version)
 print("Libraries imported.")
 
 cap = cv2.VideoCapture(0)
-
+print("Nathan")
 # model location within conda env opencv4 installation
 haarcascade_path = "/Users/nathanpollet/anaconda3/envs/XParis/share/opencv4/haarcascades/"
 
@@ -37,7 +37,7 @@ while True:
         roi = frame[y:y+h, x:x+w]
         roi = cv2.GaussianBlur(roi, (kernel_width, kernel_height), 0)
         # impose this blurred image on original image to get final image
-        frame[y:y+roi.shape[0], x:x+roi.shape[1]] = roi
+        frame[y:y+roi.shape[0], x:x+roi.shape[1]] = roi 
 
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)  # revert back to BGR format
 
