@@ -24,17 +24,8 @@ def main():
         frame.faceAndFeaturesDetection("eyesdetection")
         outputframe = frame.getframe()
 
-        sunglasses = cv2.imread("sunglasses_5.jpg")
-        sunglass_width = frame.getEyeW()
-        sunglass_height = frame.getEyeH()
-        # sunglass_resized = cv2.resize(sunglasses, (sunglass_width, sunglass_height), interpolation = cv2.INTER_CUBIC)
-
-        # Resize the face_resized_color image back to its original shape
-        print(sunglasses)
-        # print(outputframe.shape)
-
         cv2.imshow('Input', outputframe)
-        
+
         c = cv2.waitKey(1)
         if c == 27:
             break
