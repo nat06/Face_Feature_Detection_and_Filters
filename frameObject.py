@@ -86,7 +86,7 @@ class frameObject:
         end = time.time()
         # print("[INFO] dlibfrontalface took {:.4f} seconds".format(end - start))
         print("[INFO] cnn_face_detection_model_v1 took {:.4f} seconds".format(end - start))
-        boxes = [self.convert_and_trim_bb(self.frame, r) for r in rects]
+        boxes = [self.convert_and_trim_bb(self.frame, r.rect) for r in rects]
         for (x, y, w, h) in boxes: # draw the bounding box on our image
 	        cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         return
