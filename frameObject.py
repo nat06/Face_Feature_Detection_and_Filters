@@ -58,7 +58,7 @@ class frameObject:
         print("beginning retinaFacefunc")
         start = time.time()
         resp = self.retinaface.detect_faces(self.frame)
-        stop = time.time()
+        end = time.time()
         print("[INFO] retinaface took {:.4f} seconds".format(end - start))
         # num_faces = len(resp.keys())
         h, w = self.frame.shape[:2]
