@@ -6,8 +6,6 @@ from random import randint
 class frameObject:
     # default constructor
     def __init__(self, inputframe, models):
-        start = time.time()
-
         self.frame = inputframe
         self.roi = None
         self.numFaces = 0; self.numEyes = 0
@@ -17,9 +15,6 @@ class frameObject:
         self.dlibfrontalface = models['dlibfrontalface']
         self.cnn_face_detection_model_v1 = models['cnn_face_detection_model_v1']
         self.dlib_face_features = models['dlib_face_features']
-
-        end = time.time()
-        print("[INFO] init took {:.4f} seconds".format(end - start))
 
 ## functions modifying self.frame ##
     def faceAndFeaturesDetection(self, modalities):
@@ -150,8 +145,11 @@ class frameObject:
         return coords
 
     def face_features(self):
-        gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-        rects = self.dlibfrontalface(gray, 1)
+        # gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+        imag_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+        start = time.time()
+        # perform face detection using dlib's face detector
+        rects = self.dlibfrontalface(imag_rgb, 0) ## 0 upsamples for speed purposes
 
         for (i, rect) in enumerate(rects):
         	# determine the facial landmarks for the face region, then
@@ -161,10 +159,10 @@ class frameObject:
 			(168, 100, 168), (158, 163, 32),
 			(163, 38, 32), (180, 42, 220)]
             alpha = 0.75
-            start = time.time()
-            shape = self.dlib_face_features(gray, rect)
+            
+            shape = self.dlib_face_features(imag_rgb, rect)
             end = time.time()
-            print("[INFO] dlib_face_features took {:.4f} seconds".format(end - start))
+            print("[INFO] face & face features detection took {:.4f} seconds".format(end - start))
             shape = face_utils.shape_to_np(shape)
             # convert dlib's rectangle to a OpenCV-style bounding box
             # [i.e., (x, y, w, h)], then draw the face bounding box
@@ -181,7 +179,7 @@ class frameObject:
             '''
             # loop over the face parts individually
             # loop over the facial landmark regions individually
-            print("FACIAL_LANDMARKS_IDXS.keys() : \n", FACIAL_LANDMARKS_IDXS.keys())
+            print("FACIAL_LANDMARKS_IDXS.keys() : \n", face_utils.FACIAL_LANDMARKS_IDXS.keys())
             for (i, name) in enumerate(face_utils.FACIAL_LANDMARKS_IDXS.keys()):
                 # grab the (x, y)-coordinates associated with the
                 # face landmark
@@ -195,8 +193,7 @@ class frameObject:
                     for l in range(1, len(pts)):
                         ptA = tuple(pts[l - 1])
                         ptB = tuple(pts[l])
-                        print("----- ", i, "----")
-                        cv2.line(self.frame, ptA, ptB, colors[i], 2)
+                        cv2.line(self.frame, ptA, ptB, colors[i-1], 2)
                 # otherwise, compute the convex hull of the facial
                 # landmark coordinates points and display it
                 else:
