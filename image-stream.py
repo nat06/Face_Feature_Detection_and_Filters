@@ -4,10 +4,14 @@ import os
 import time
 import numpy as np
 import time
+# import tensorflow as tf
+# import keras
 import matplotlib.pyplot as plt
 from retinaface import RetinaFace
 from frameObject import frameObject
 import dlib
+import imutils
+from imutils import face_utils
 print(sys.version)
 print("cv.__version__ : ", cv2.__version__)
 print("Python version : ", sys.version)
@@ -25,6 +29,7 @@ def main():
     models['retinaface'] = RetinaFace
     models['dlibfrontalface'] = dlib.get_frontal_face_detector()
     models['cnn_face_detection_model_v1'] = dlib.cnn_face_detection_model_v1("mmod_human_face_detector.dat")
+    models['dlib_face_features'] = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
     print("done generating models")
 
     # Check if the webcam is opened correctly
@@ -37,7 +42,8 @@ def main():
         frame = frameObject(inputframe, models)
         # frame.faceAndFeaturesDetection("eyesdetection")
         # frame.retinaFacefunc()
-        frame.dlibfunc()
+        # frame.frontalfacedetection("nadafornow")
+        frame.face_features()
         outputframe = frame.getframe()
         # numFaces, outputframe = desiredAction("face_eyes_detection_and_blurring", inputframe)
         # arr.append(numFaces)

@@ -1,5 +1,7 @@
 import cv2
 import time
+import imutils
+from imutils import face_utils
 class frameObject:
     # default constructor
     def __init__(self, inputframe, models):
@@ -13,6 +15,7 @@ class frameObject:
         self.retinaface = models['retinaface']
         self.dlibfrontalface = models['dlibfrontalface']
         self.cnn_face_detection_model_v1 = models['cnn_face_detection_model_v1']
+        self.dlib_face_features = models['dlib_face_features']
 
         end = time.time()
         print("[INFO] init took {:.4f} seconds".format(end - start))
@@ -76,18 +79,29 @@ class frameObject:
             # self.frame[y:y+roi.shape[0], x:x+roi.shape[1]] = roi
         return
 
-    def dlibfunc(self):
+    def frontalfacedetection(self, modalities):
         imag_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
 
         # perform face detection using dlib's face detector
         start = time.time()
-        # rects = self.dlibfrontalface(imag_rgb, 0) ## 0 upsamples for speed purposes
+        rects = self.dlibfrontalface(imag_rgb, 1) ## 0 upsamples for speed purposes
+        end = time.time()
+        print("[INFO] dlibfrontalface took {:.4f} seconds".format(end - start))
+        boxes = [self.convert_and_trim_bb(self.frame, r) for r in rects]
+        for (x, y, w, h) in boxes: # draw the bounding box on our image
+	        cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        return
+
+    def cnn_face_detection(self):
+        imag_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+
+        # perform face detection using dlib's face detector
+        start = time.time()
         rects = self.cnn_face_detection_model_v1(imag_rgb, 0) ## 0 upsamples for speed purposes
         end = time.time()
-        # print("[INFO] dlibfrontalface took {:.4f} seconds".format(end - start))
         print("[INFO] cnn_face_detection_model_v1 took {:.4f} seconds".format(end - start))
         boxes = [self.convert_and_trim_bb(self.frame, r.rect) for r in rects]
-        for (x, y, w, h) in boxes: # draw the bounding box on our image
+        for (x, y, w, h) in boxes:  # draw the bounding box on our image
 	        cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         return
 
@@ -109,3 +123,54 @@ class frameObject:
         h = endY - startY
         # return our bounding box coordinates
         return (startX, startY, w, h)
+
+    def rect_to_bb(self, rect):
+	# take a bounding predicted by dlib and convert it
+	# to the format (x, y, w, h) as we would normally do
+	# with OpenCV
+        x = rect.left()
+        y = rect.top()
+        w = rect.right() - x
+        h = rect.bottom() - y
+
+        # return a tuple of (x, y, w, h)
+        return (x, y, w, h)
+
+    def shape_to_np(self, shape, dtype="int"):
+        # initialize the list of (x, y)-coordinates
+        coords = np.zeros((68, 2), dtype=dtype)
+
+        # loop over the 68 facial landmarks and convert them
+        # to a 2-tuple of (x, y)-coordinates
+        for i in range(0, 68):
+            coords[i] = (shape.part(i).x, shape.part(i).y)
+
+        # return the list of (x, y)-coordinates
+        return coords
+
+    def face_features(self):
+        gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+        rects = self.dlibfrontalface(gray, 1)
+
+        for (i, rect) in enumerate(rects):
+        	# determine the facial landmarks for the face region, then
+        	# convert the facial landmark (x, y)-coordinates to a NumPy
+        	# array
+            start = time.time()
+            shape = self.dlib_face_features(gray, rect)
+            end = time.time()
+            print("[INFO] dlib_face_features took {:.4f} seconds".format(end - start))
+            shape = face_utils.shape_to_np(shape)
+            # convert dlib's rectangle to a OpenCV-style bounding box
+            # [i.e., (x, y, w, h)], then draw the face bounding box
+            (x, y, w, h) = face_utils.rect_to_bb(rect)
+            cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            # show the face number
+            cv2.putText(self.frame, "Face #{}".format(i + 1), (x - 10, y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            # loop over the (x, y)-coordinates for the facial landmarks
+            # and draw them on the image
+            for (x, y) in shape:
+                cv2.circle(self.frame, (x, y), 1, (0, 0, 255), -1)
+        
+        return
