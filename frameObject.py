@@ -2,6 +2,7 @@ import cv2
 import time
 import imutils
 from imutils import face_utils
+from random import randint
 class frameObject:
     # default constructor
     def __init__(self, inputframe, models):
@@ -156,6 +157,10 @@ class frameObject:
         	# determine the facial landmarks for the face region, then
         	# convert the facial landmark (x, y)-coordinates to a NumPy
         	# array
+            colors = [(19, 199, 109), (79, 76, 240), (230, 159, 23),
+			(168, 100, 168), (158, 163, 32),
+			(163, 38, 32), (180, 42, 220)]
+            alpha = 0.75
             start = time.time()
             shape = self.dlib_face_features(gray, rect)
             end = time.time()
@@ -163,6 +168,7 @@ class frameObject:
             shape = face_utils.shape_to_np(shape)
             # convert dlib's rectangle to a OpenCV-style bounding box
             # [i.e., (x, y, w, h)], then draw the face bounding box
+            '''
             (x, y, w, h) = face_utils.rect_to_bb(rect)
             cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             # show the face number
@@ -172,5 +178,30 @@ class frameObject:
             # and draw them on the image
             for (x, y) in shape:
                 cv2.circle(self.frame, (x, y), 1, (0, 0, 255), -1)
-        
+            '''
+            # loop over the face parts individually
+            # loop over the facial landmark regions individually
+            print("FACIAL_LANDMARKS_IDXS.keys() : \n", FACIAL_LANDMARKS_IDXS.keys())
+            for (i, name) in enumerate(face_utils.FACIAL_LANDMARKS_IDXS.keys()):
+                # grab the (x, y)-coordinates associated with the
+                # face landmark
+                (j, k) = face_utils.FACIAL_LANDMARKS_IDXS[name]
+                pts = shape[j:k]
+                # check if are supposed to draw the jawline
+                if name == "jaw":
+                    # print()
+                    # since the jawline is a non-enclosed facial region,
+                    # just draw lines between the (x, y)-coordinates
+                    for l in range(1, len(pts)):
+                        ptA = tuple(pts[l - 1])
+                        ptB = tuple(pts[l])
+                        print("----- ", i, "----")
+                        cv2.line(self.frame, ptA, ptB, colors[i], 2)
+                # otherwise, compute the convex hull of the facial
+                # landmark coordinates points and display it
+                else:
+                    print("got to hull")
+                    hull = cv2.convexHull(pts)
+                    cv2.drawContours(self.frame, [hull], -1, colors[i], -1)
+                    # cv2.addWeighted(self.frame, alpha, self.frame, 1-alpha, 0, self.frame)
         return

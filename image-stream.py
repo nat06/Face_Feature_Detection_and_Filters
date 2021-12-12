@@ -32,6 +32,7 @@ def main():
     models['dlib_face_features'] = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
     print("done generating models")
 
+
     # Check if the webcam is opened correctly
     if not cap.isOpened():
         raise IOError("Cannot open webcam.")
