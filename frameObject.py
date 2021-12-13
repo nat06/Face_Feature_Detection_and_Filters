@@ -2,7 +2,6 @@ import cv2
 import time
 import imutils
 from imutils import face_utils
-from random import randint
 class frameObject:
     # default constructor
     def __init__(self, inputframe, models):
@@ -16,13 +15,13 @@ class frameObject:
         self.cnn_face_detection_model_v1 = models['cnn_face_detection_model_v1']
         self.dlib_face_features = models['dlib_face_features']
 
-## functions modifying self.frame ##
+    ## functions modifying self.frame ##
     def faceAndFeaturesDetection(self, modalities):
-## returns number of detected faces, modifies self.frame ##
-        start = time.time()
+    ## returns number of detected faces, modifies self.frame ##
+        # start = time.time()
         face_data = self.facedetector_haarcascades.detectMultiScale(self.frame, scaleFactor=1.15, minNeighbors=7, minSize=(30,30))
-        end = time.time()
-        print("[INFO] facedetector_haarcascades took {:.4f} seconds".format(end - start))
+        # end = time.time()
+        # print("[INFO] facedetector_haarcascades took {:.4f} seconds".format(end - start))
         self.numFaces = len(face_data)
         h, w = self.frame.shape[:2]
         # computing Kernel width and height for efficient blurring 
@@ -39,7 +38,7 @@ class frameObject:
                 self.frame[y:y+self.roi.shape[0], x:x+self.roi.shape[1]] = self.roi
         
     def eyesdetection(self):
-## returns number of detected eyes in a face, modifies self.roi ##
+    ## returns number of detected eyes in a face, modifies self.roi ##
         roi_gray = cv2.cvtColor(self.roi, cv2.COLOR_BGR2GRAY)
         start = time.time()
         eyes = self.eyedetector_haarcascades.detectMultiScale(roi_gray)
@@ -54,14 +53,12 @@ class frameObject:
         return self.frame
 
     def retinaFacefunc(self):
-        print("beginning retinaFacefunc")
-        start = time.time()
+    ## state-of-the-art Deep Learning solution, modifies self.frame ##
+        # start = time.time()
         resp = self.retinaface.detect_faces(self.frame)
-        end = time.time()
-        print("[INFO] retinaface took {:.4f} seconds".format(end - start))
-        # num_faces = len(resp.keys())
+        # end = time.time()
+        # print("[INFO] retinaface took {:.4f} seconds".format(end - start))
         h, w = self.frame.shape[:2]
-        # computing Kernel width and height for efficient blurring
         kernel_width = (w // 9) | 1
         kernel_height = (h // 9) | 1
         for face in resp.keys():
@@ -69,35 +66,29 @@ class frameObject:
             x = coordinates[0]; y = coordinates[1]
             x2 = coordinates[2]; y2 = coordinates[3]
             cv2.rectangle(self.frame, (x, y), (x2, y2), (0, 255, 0), 2)
-            # roi = self.image[y:y2, x:x2]
-            # roi = cv2.GaussianBlur(roi, (kernel_width, kernel_height), 0)
-            # impose this blurred image on original image to get final image
-            # self.frame[y:y+roi.shape[0], x:x+roi.shape[1]] = roi
         return
 
     def frontalfacedetection(self, modalities):
+    ## perform face detection using dlib's HOG-SVM face detector, modifies self.frame ##
         imag_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-
-        # perform face detection using dlib's face detector
-        start = time.time()
-        rects = self.dlibfrontalface(imag_rgb, 1) ## 0 upsamples for speed purposes
-        end = time.time()
-        print("[INFO] dlibfrontalface took {:.4f} seconds".format(end - start))
+        # start = time.time()
+        rects = self.dlibfrontalface(imag_rgb, 0) ## 0 upsamples for speed purposes
+        # end = time.time()
+        # print("[INFO] dlibfrontalface took {:.4f} seconds".format(end - start))
         boxes = [self.convert_and_trim_bb(self.frame, r) for r in rects]
-        for (x, y, w, h) in boxes: # draw the bounding box on our image
+        for (x, y, w, h) in boxes: # draws bounding box
 	        cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         return
 
     def cnn_face_detection(self):
+    ## perform face detection using dlib's cnn face detector, modifies self.frame ##
         imag_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-
-        # perform face detection using dlib's face detector
-        start = time.time()
+        # start = time.time()
         rects = self.cnn_face_detection_model_v1(imag_rgb, 0) ## 0 upsamples for speed purposes
-        end = time.time()
-        print("[INFO] cnn_face_detection_model_v1 took {:.4f} seconds".format(end - start))
+        # end = time.time()
+        # print("[INFO] cnn_face_detection_model_v1 took {:.4f} seconds".format(end - start))
         boxes = [self.convert_and_trim_bb(self.frame, r.rect) for r in rects]
-        for (x, y, w, h) in boxes:  # draw the bounding box on our image
+        for (x, y, w, h) in boxes:  # draws bounding box
 	        cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         return
 
@@ -121,7 +112,7 @@ class frameObject:
         return (startX, startY, w, h)
 
     def rect_to_bb(self, rect):
-	# take a bounding predicted by dlib and convert it
+	# takes a bounding predicted by dlib and converts it
 	# to the format (x, y, w, h) as we would normally do
 	# with OpenCV
         x = rect.left()
@@ -147,7 +138,7 @@ class frameObject:
     def face_features(self):
         # gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         imag_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-        start = time.time()
+        # start = time.time()
         # perform face detection using dlib's face detector
         rects = self.dlibfrontalface(imag_rgb, 0) ## 0 upsamples for speed purposes
 
@@ -159,14 +150,14 @@ class frameObject:
 			(168, 100, 168), (158, 163, 32),
 			(163, 38, 32), (180, 42, 220)]
             alpha = 0.75
-            
             shape = self.dlib_face_features(imag_rgb, rect)
-            end = time.time()
-            print("[INFO] face & face features detection took {:.4f} seconds".format(end - start))
+            # end = time.time()
+            # print("[INFO] face & face features detection took {:.4f} seconds".format(end - start))
             shape = face_utils.shape_to_np(shape)
-            # convert dlib's rectangle to a OpenCV-style bounding box
-            # [i.e., (x, y, w, h)], then draw the face bounding box
             '''
+            ## code to display face features using red circles ##
+            # convert dlib's rectangle to a OpenCV-style bounding box + text
+            # [i.e., (x, y, w, h)], then draw the face bounding box
             (x, y, w, h) = face_utils.rect_to_bb(rect)
             cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             # show the face number
@@ -179,7 +170,7 @@ class frameObject:
             '''
             # loop over the face parts individually
             # loop over the facial landmark regions individually
-            print("FACIAL_LANDMARKS_IDXS.keys() : \n", face_utils.FACIAL_LANDMARKS_IDXS.keys())
+            # print("FACIAL_LANDMARKS_IDXS.keys() : \n", face_utils.FACIAL_LANDMARKS_IDXS.keys())
             for (i, name) in enumerate(face_utils.FACIAL_LANDMARKS_IDXS.keys()):
                 # grab the (x, y)-coordinates associated with the
                 # face landmark

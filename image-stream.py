@@ -4,6 +4,7 @@ import os
 import time
 import numpy as np
 import time
+import random
 # import tensorflow as tf
 # import keras
 import matplotlib.pyplot as plt
