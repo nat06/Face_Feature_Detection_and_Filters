@@ -1,53 +1,57 @@
 import cv2
 import sys
 import os
+import time
 import numpy as np
 import time
+import random
 import matplotlib.pyplot as plt
+from retinaface import RetinaFace
+from frameObject import frameObject
+import dlib
 print(sys.version)
 print("cv.__version__ : ", cv2.__version__)
 print("Python version : ", sys.version)
 print("Libraries imported.")
 
-cap = cv2.VideoCapture(0)
-print("Nathan")
-# model location within conda env opencv4 installation
-haarcascade_path = "/Users/nathanpollet/anaconda3/envs/XParis/share/opencv4/haarcascades/"
+## NOTE: haar-cascades models also available in /Users/nathanpollet/anaconda3/envs/XParis/lib/python3.9/site-packages/cv2/data/
 
-# Check if the webcam is opened correctly
-if not cap.isOpened():
-    raise IOError("Cannot open webcam, whattup")
+def main():
+    cap = cv2.VideoCapture(0)
+    arr = []
+    haar_path = "/Users/nathanpollet/anaconda3/envs/XParis/share/opencv4/haarcascades/"
+    models = {}
+    models['facedetector_haarcascades'] = cv2.CascadeClassifier(haar_path + 'haarcascade_frontalface_default.xml') # load classifier
+    models['eyedetector_haarcascades'] = cv2.CascadeClassifier(haar_path + 'haarcascade_eye_tree_eyeglasses.xml')  # load classifier 
+    models['retinaface'] = RetinaFace
+    models['dlibfrontalface'] = dlib.get_frontal_face_detector()
+    models['cnn_face_detection_model_v1'] = dlib.cnn_face_detection_model_v1('pretrained/mmod_human_face_detector.dat')
+    models['dlib_face_features'] = dlib.shape_predictor('pretrained/shape_predictor_68_face_landmarks.dat')
+    print("done loading models")
 
-while True:
-    ret, frame = cap.read()
-    # frame = cv2.resize(frame, None, fx=0.5, fy=0.5,
-    #                    interpolation=cv2.INTER_AREA)
-    # Converting BGR image into a RGB image
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    face_detect = cv2.CascadeClassifier(haarcascade_path + 'haarcascade_frontalface_default.xml') # load classifier
-    face_data = face_detect.detectMultiScale(frame, 1.15, 3)
-    h, w = frame.shape[:2]
-    # computing Kernel width and height for efficient blurring
-    kernel_width = (w // 7) | 1
-    kernel_height = (h // 7) | 1
+    # Check if the webcam is opened correctly
+    if not cap.isOpened():
+        raise IOError("Cannot open webcam.")
+    counter = 0
+    while True:
+        counter+=1
+        ret, inputframe = cap.read()
+        frame = frameObject(inputframe, models)
+        
+        # frame.faceAndFeaturesDetection("eyesdetection")
+        # frame.retinaFacefunc()
+        # frame.frontalfacedetection("")
+        frame.face_features()
 
-    # Draw rectangles and blur detected faces
-    for (x, y, w, h) in face_data:
-        # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        roi = frame[y:y+h, x:x+w]
-        roi = cv2.GaussianBlur(roi, (kernel_width, kernel_height), 0)
-        # impose this blurred image on original image to get final image
-        frame[y:y+roi.shape[0], x:x+roi.shape[1]] = roi 
+        outputframe = frame.getframe()
+        cv2.imshow('Input', outputframe)
 
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)  # revert back to BGR format
+        c = cv2.waitKey(1)
+        if c == 27:
+            break
 
-    cv2.imshow('Input', frame)
-    # print("sleeping")
-    # time.sleep(5)
+    cap.release()
+    cv2.destroyAllWindows()
 
-    c = cv2.waitKey(1)
-    if c == 27:
-        break
-
-cap.release()
-cv2.destroyAllWindows()
+if __name__ == "__main__":
+    main()
