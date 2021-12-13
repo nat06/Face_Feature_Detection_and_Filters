@@ -1,8 +1,11 @@
+import sys
+sys.path.append("/home/laura/envs/inf573/lib/python3.9/site-packages/cv2")
 import cv2
 import numpy as np
 import dlib
 import math
 import os
+# from pynput.keyboard import Key
 
 os.chdir("/home/laura/Documents/Polytechnique/MScT - M1/INF573 Image Analysis and Computer Vision/INF573 - Final Project/INF573---Project")
 
@@ -49,24 +52,89 @@ cap = cv2.VideoCapture(0)
 ret, img = cap.read()
 img_h, img_w = img.shape[:2]
 
-while(cap.isOpened()):
+
+while cap.isOpened():
+    # press 'q' to exit
     ret, frame = cap.read()
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     pig_mask = np.zeros((img_w, img_h, 3))
-    
-    faces = landmark_detector(frame)
 
-    for face in faces:
-        landmarks = landmark_predictor(gray_frame, face)
-        frame = pig_filter(frame, landmarks)
-    
     cv2.imshow('frame', frame)
 
-    # If q is pressed quit
     if cv2.waitKey(1) & 0xFF == ord('q'):
-        print("q pressed")
         break
 
-cap.release()
+    elif cv2.waitKey(1) & 0xFF == ord('b'):
+        while cap.isOpened() :
+            ret, frame = cap.read()
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            pig_mask = np.zeros((img_w, img_h, 3))
+            faces = landmark_detector(frame)
+            
+            for face in faces:
+                landmarks = landmark_predictor(gray_frame, face)
+                frame = pig_filter(frame, landmarks)
 
+            cv2.imshow('frame', frame)
+
+            # If q is pressed quit
+            if cv2.waitKey(1) & 0xFF == ord(' '):
+                print("q pressed")
+                break
+
+    elif cv2.waitKey(1) & 0xFF == ord('k'):
+       print("yo!")
+    
+
+cap.release()
 cv2.destroyAllWindows()
+
+################################### TRY1 ###################################
+# while(cap.isOpened()):
+#     ret, frame = cap.read()
+#     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#     pig_mask = np.zeros((img_w, img_h, 3))
+    
+#     faces = landmark_detector(frame)
+
+#     # If q is pressed quit
+#     if cv2.waitKey(1) & 0xFF == ord('q'):
+#         print("q pressed")
+#         break
+
+#     if keyboard.is_pressed('p') :
+        
+#         for face in faces:
+#             landmarks = landmark_predictor(gray_frame, face)
+#             frame = pig_filter(frame, landmarks)
+        
+#     cv2.imshow('frame', frame)
+
+################################### TRY2 ###################################
+# import tty, sys, termios
+
+# filedescriptors = termios.tcgetattr(sys.stdin)
+# tty.setcbreak(sys.stdin)
+# x = 0
+
+# while(cap.isOpened()):
+    
+#     ret, frame = cap.read()
+#     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#     pig_mask = np.zeros((img_w, img_h, 3))
+    
+#     cv2.imshow('frame', frame)
+    
+#     print("hi!")
+#     x=sys.stdin.read(1)[0]
+#     print("hhhhhhhhi")
+
+#     while x == "p":
+#         print("If condition is met")
+
+#         x=sys.stdin.read(1)[0]
+#         print("You pressed", x)
+
+#     print("imout")
+
+# termios.tcsetattr(sys.stdin, termios.TCSADRAIN,filedescriptors)
