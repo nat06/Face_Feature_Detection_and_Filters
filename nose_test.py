@@ -1,11 +1,10 @@
-import sys
-sys.path.append("/home/laura/envs/inf573/lib/python3.9/site-packages/cv2")
 import cv2
 import numpy as np
 import dlib
 import math
 import os
-# from pynput.keyboard import Key
+from datetime import datetime
+import pickle
 
 os.chdir("/home/laura/Documents/Polytechnique/MScT - M1/INF573 Image Analysis and Computer Vision/INF573 - Final Project/INF573---Project")
 
@@ -52,19 +51,52 @@ cap = cv2.VideoCapture(0)
 ret, img = cap.read()
 img_h, img_w = img.shape[:2]
 
+# i = 0
+# while cap.isOpened() :
+#     s = datetime.now()
+#     ret, frame = cap.read()
+#     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#     pig_mask = np.zeros((img_w, img_h, 3))
+#     faces = landmark_detector(frame)
+    
+#     for face in faces:
+#         landmarks = landmark_predictor(gray_frame, face)
+#         frame = pig_filter(frame, landmarks)
+    
+#     if cv2.waitKey(1) & 0xFF == ord('q'):
+#         break
+
+#     cv2.imshow('frame', frame)
+
+    # if i == 0 :
+    #     time = datetime.now() - s
+    #     with open("howlong.pkl", "wb") as f:
+    #         pickle.dump(time, f)
+    #     i=-1
+
+# cap.release()
+# cv2.destroyAllWindows()
+
+
 
 while cap.isOpened():
     # press 'q' to exit
     ret, frame = cap.read()
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    pig_mask = np.zeros((img_w, img_h, 3))
-
     cv2.imshow('frame', frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    key = cv2.waitKey(1) & 0xFF
 
-    elif cv2.waitKey(1) & 0xFF == ord('b'):
+    if key == ord('b'):
+        pig_mask = np.zeros((img_w, img_h, 3))
+        faces = landmark_detector(frame)
+        
+        for face in faces:
+            landmarks = landmark_predictor(gray_frame, face)
+            frame = pig_filter(frame, landmarks)
+
+        cv2.imshow('frame', frame)
+
         while cap.isOpened() :
             ret, frame = cap.read()
             gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -79,15 +111,52 @@ while cap.isOpened():
 
             # If q is pressed quit
             if cv2.waitKey(1) & 0xFF == ord(' '):
-                print("q pressed")
+                print("Removing filter")
                 break
 
-    elif cv2.waitKey(1) & 0xFF == ord('k'):
-       print("yo!")
+    # fake second filter
+    if key == ord('p'):
+        pig_mask = np.zeros((img_w, img_h, 3))
+        faces = landmark_detector(frame)
+        
+        for face in faces:
+            landmarks = landmark_predictor(gray_frame, face)
+            frame = pig_filter(frame, landmarks)
+
+        cv2.imshow('frame', frame)
+
+        while cap.isOpened() :
+            ret, frame = cap.read()
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            pig_mask = np.zeros((img_w, img_h, 3))
+            faces = landmark_detector(frame)
+            
+            for face in faces:
+                landmarks = landmark_predictor(gray_frame, face)
+                frame = pig_filter(frame, landmarks)
+
+            cv2.imshow('frame', frame)
+
+            # If q is pressed quit
+            if cv2.waitKey(1) & 0xFF == ord(' '):
+                print("Removing filter")
+                break
+    
+    if key == ord('q'):
+        break
+
     
 
 cap.release()
 cv2.destroyAllWindows()
+
+
+
+
+
+
+
+# Trying to enable a filter with keyboard
 
 ################################### TRY1 ###################################
 # while(cap.isOpened()):
