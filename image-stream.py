@@ -29,8 +29,8 @@ def main():
     models['eyedetector_haarcascades'] = cv2.CascadeClassifier(haar_path + 'haarcascade_eye_tree_eyeglasses.xml')  # load classifier 
     models['retinaface'] = RetinaFace
     models['dlibfrontalface'] = dlib.get_frontal_face_detector()
-    models['cnn_face_detection_model_v1'] = dlib.cnn_face_detection_model_v1("pretrained models/mmod_human_face_detector.dat")
-    models['dlib_face_features'] = dlib.shape_predictor('pretrained models/shape_predictor_68_face_landmarks.dat')
+    models['cnn_face_detection_model_v1'] = dlib.cnn_face_detection_model_v1("pretrained model/mmod_human_face_detector.dat")
+    models['dlib_face_features'] = dlib.shape_predictor('pretrained model/shape_predictor_68_face_landmarks.dat')
     print("done generating models")
 
 
