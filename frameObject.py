@@ -176,20 +176,17 @@ class frameObject:
                 # face landmark
                 (j, k) = face_utils.FACIAL_LANDMARKS_IDXS[name]
                 pts = shape[j:k]
-                # check if are supposed to draw the jawline
                 if name == "jaw":
-                    # print()
                     # since the jawline is a non-enclosed facial region,
                     # just draw lines between the (x, y)-coordinates
                     for l in range(1, len(pts)):
                         ptA = tuple(pts[l - 1])
                         ptB = tuple(pts[l])
-                        cv2.line(self.frame, ptA, ptB, colors[i-1], 2)
+                        cv2.line(self.frame, ptA, ptB, colors[i-1], 4)
                 # otherwise, compute the convex hull of the facial
                 # landmark coordinates points and display it
                 else:
-                    print("got to hull")
                     hull = cv2.convexHull(pts)
-                    cv2.drawContours(self.frame, [hull], -1, colors[i], -1)
-                    # cv2.addWeighted(self.frame, alpha, self.frame, 1-alpha, 0, self.frame)
+                    cv2.drawContours(self.frame, [hull], -1, colors[i], 3)
+                    cv2.addWeighted(self.frame, alpha, self.frame, 1-alpha, 0, self.frame)
         return

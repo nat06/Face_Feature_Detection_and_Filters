@@ -1,2 +1,0 @@
-- make class: object with constructor taking in an input frame and containing functions enabling all detections and actions. Object returns an output frame. 
-
