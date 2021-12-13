@@ -47,19 +47,12 @@ def main():
         # frame.frontalfacedetection("nadafornow")
         frame.face_features()
         outputframe = frame.getframe()
-        # numFaces, outputframe = desiredAction("face_eyes_detection_and_blurring", inputframe)
-        # arr.append(numFaces)
-        # cv2.imwrite('./heyo.png', outputframe)
         cv2.imshow('Input', outputframe)
-
-        # if counter == 10:
-        #     break
 
         c = cv2.waitKey(1)
         if c == 27:
             break
 
-    # print(arr)
     cap.release()
     cv2.destroyAllWindows()
 
