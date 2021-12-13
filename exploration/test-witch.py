@@ -75,7 +75,6 @@ while True:   #continue to run until user breaks loop
 
         #resize witch to fit on face
         witch = cv2.resize(witch, (witch_width,witch_height), interpolation = cv2.INTER_AREA)
-        # witch = cv2.resize(witch, (face_w, face_h))
         mask = cv2.resize(original_mask, (witch_width,witch_height), interpolation = cv2.INTER_AREA)
         mask_inv = cv2.resize(original_mask_inv, (witch_width,witch_height), interpolation = cv2.INTER_AREA)
 

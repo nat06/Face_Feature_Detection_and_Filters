@@ -4,123 +4,44 @@ import dlib
 import math
 import os
 from datetime import datetime
+from imutils import face_utils
 import pickle
-
-os.chdir("/home/laura/Documents/Polytechnique/MScT - M1/INF573 Image Analysis and Computer Vision/INF573 - Final Project/INF573---Project")
-
-def pig_filter(frame, landmarks) :
-
-    # Required landmarks to place an image onto the nose
-    nosetop = (landmarks.part(29).x, landmarks.part(29).y)
-    nosemid = (landmarks.part(30).x, landmarks.part(30).y)
-    noseleft = (landmarks.part(31).x, landmarks.part(31).y)
-    noseright = (landmarks.part(35).x, landmarks.part(35).y)
-
-    # Loading filter
-    pig_image = cv2.imread("filters/pig_nose-removebg-preview.png")
-    og_pig_h, og_pig_w, pig_channels = pig_image.shape
-
-    pig_gray = cv2.cvtColor(pig_image, cv2.COLOR_BGR2GRAY)
-    ret, original_mask = cv2.threshold(pig_gray, 10, 255, cv2.THRESH_BINARY_INV)
-    original_mask_inv = cv2.bitwise_not(original_mask)
-
-    pig_width = int(1.5*abs(noseright[0] - noseleft[0]))
-    pig_height = int(abs(pig_width * og_pig_h/og_pig_w ))
-
-    up_center = (int(nosemid[0] - pig_width / 2),int(nosemid[1] - pig_height / 2))
-    
-    pig_area = frame[ up_center[1] : up_center[1] + pig_height, up_center[0] : up_center[0] + pig_width]
-    pig_img = cv2.resize(pig_image, (pig_width, pig_height))
-    pig_mask = cv2.resize(original_mask, (pig_width, pig_height))
-    pig_mask_inv = cv2.resize(original_mask_inv, (pig_width, pig_height))
+import filter_functions as ff
 
 
-    roi_bg = cv2.bitwise_and(pig_area, pig_area, mask = pig_mask)
-    roi_fg = cv2.bitwise_and(pig_area, pig_area,mask= pig_mask_inv)
-    final_frame = cv2.add(roi_bg, pig_img)
 
-    frame[up_center[1] : up_center[1] + pig_height, up_center[0] : up_center[0] + pig_width] = final_frame
+# CHANGE THIS TO YOUR PATH TO INF573--Project
+path = "/home/laura/Documents/Polytechnique/MScT - M1/INF573 Image Analysis and Computer Vision/INF573 - Final Project/INF573---Project"
+os.chdir(path)
 
-    return frame
+# Loading models
+landmark_detector = dlib.get_frontal_face_detector()
+landmark_predictor = dlib.shape_predictor("models/shape_predictor_81_face_landmarks.dat")
 
-def piercing_filter(frame, landmarks) :
+FILTERS = {'p': ff.pig_filter, 's' : ff.piercing_filter, 'd' : ff.devil_horns_filter, 
+           't' : ff.tears_filter, 'm' : ff.diadelosmuertos_filter, 'g' : ff.glasses_filter}
 
-    # Required landmarks to place an image onto the nose
-    nostril_left = (landmarks.part(32).x, landmarks.part(32).y)
-    nosemid = (landmarks.part(33).x, landmarks.part(33).y)
-    nostril_right = (landmarks.part(34).x, landmarks.part(34).y)
-    lip_top = (landmarks.part(51).x, landmarks.part(51).y)
+def get_filters(filter_function) :
+    while cap.isOpened() :
+            ret, frame = cap.read()
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = landmark_detector(frame)
+            
+            for face in faces:
+                landmarks = landmark_predictor(gray_frame, face)
+                frame = filter_function(frame, landmarks)
 
-    # Loading filter
-    piercing = cv2.imread("filters/nosepiercing-removebg-preview.png")
-    og_piercing_h, og_piercing_w, piercing_channels = piercing.shape
+            cv2.imshow('frame', frame)
 
-    piercing_gray = cv2.cvtColor(piercing, cv2.COLOR_BGR2GRAY)
-    ret, original_mask = cv2.threshold(piercing_gray, 10, 255, cv2.THRESH_BINARY_INV)
-    original_mask_inv = cv2.bitwise_not(original_mask)
-
-    piercing_width = int(4*abs(nostril_right[0] - nostril_left[0]))
-    # pig_height = int(abs(pig_width * og_pig_h/og_pig_w ))
-    piercing_height = int(2*abs(nosemid[1] - lip_top[1]))
-
-    up_center = (int(nosemid[0] - piercing_width / 2),int(nosemid[1] - piercing_height / 2))
-    
-    piercing_area = frame[ up_center[1] : up_center[1] + piercing_height, up_center[0] : up_center[0] + piercing_width]
-    piercing_img = cv2.resize(piercing, (piercing_width, piercing_height))
-    piercing_mask = cv2.resize(original_mask, (piercing_width, piercing_height))
-    piercing_mask_inv = cv2.resize(original_mask_inv, (piercing_width, piercing_height))
-
-
-    roi_bg = cv2.bitwise_and(piercing_area, piercing_area, mask = piercing_mask)
-    roi_fg = cv2.bitwise_and(piercing_area, piercing_area,mask= piercing_mask_inv)
-    final_frame = cv2.add(roi_bg, piercing_img)
-
-    frame[up_center[1] : up_center[1] + piercing_height, up_center[0] : up_center[0] + piercing_width] = final_frame
-
-    return frame
-
-def glasses_filter(frame, landmark) :
-
-     # Required landmarks to place an image around eyes
-    foreheadtop_left = (landmarks.part(77).x, landmarks.part(77).y)
-    foreheadbottom_left = (landmarks.part(1).x, landmarks.part(1).y)
-    foreheadbottom_right = (landmarks.part(15).x, landmarks.part(15).y)
-
-    # Loading filter
-    glasses = cv2.imread("filters/sunglasses_5.png")
-    og_glasses_h, og_glasses_w, glasses_channels = glasses.shape
-
-    glasses_gray = cv2.cvtColor(glasses, cv2.COLOR_BGR2GRAY)
-    ret, original_mask = cv2.threshold(glasses_gray, 10, 255, cv2.THRESH_BINARY_INV)
-    original_mask_inv = cv2.bitwise_not(original_mask)
-
-    glasses_width = int(1.5*abs(foreheadbottom_right[0] - foreheadbottom_left[0]))
-    glasses_height = int(abs(glasses_width * og_glasses_h/og_glasses_w))
-
-    up_center = (int(foreheadtop_left[0] - glasses_width / 2),int(foreheadtop_left[1] - glasses_height / 2))
-    
-    glasses_area = frame[ up_center[1] : up_center[1] + glasses_height, up_center[0] : up_center[0] + glasses_width]
-    glasses_img = cv2.resize(glasses, (glasses_width, glasses_height))
-    pig_mask = cv2.resize(original_mask, (glasses_width, glasses_height))
-    pig_mask_inv = cv2.resize(original_mask_inv, (glasses_width, glasses_height))
-
-
-    roi_bg = cv2.bitwise_and(glasses_area,glasses_area,mask = pig_mask)
-    roi_fg = cv2.bitwise_and(glasses_area,glasses_area,mask= pig_mask_inv)
-    final_frame = cv2.add(roi_bg, glasses_img)
-
-    frame[up_center[1] : up_center[1] + glasses_height, up_center[0] : up_center[0] + glasses_width] = final_frame
-
-    return frame
+            # If q is pressed quit
+            if cv2.waitKey(1) & 0xFF == ord(' '):
+                print("Removing filter")
+                return
 
 
 ##################################### INTERACTIVE PART ###################################
 ##########################################################################################
 
-
-# Loading models
-landmark_detector = dlib.get_frontal_face_detector()
-landmark_predictor = dlib.shape_predictor("shape_predictor_81_face_landmarks.dat")
 
 cap = cv2.VideoCapture(0)
 while cap.isOpened():
@@ -148,67 +69,97 @@ while cap.isOpened():
             if cv2.waitKey(1) & 0xFF == ord(' '):
                 print("Removing feature points")
                 break
+    
+    # Rectangle around face
+    if key == ord('r'):
+        while(cap.isOpened()):
+            ret, frame = cap.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            rects = landmark_detector(gray, 1)
+
+            for (i, rect) in enumerate(rects):
+                # determine the facial landmarks for the face region, then
+                # convert the facial landmark (x, y)-coordinates to a NumPy
+                # array
+                colors = [(19, 199, 109), (79, 76, 240), (230, 159, 23),
+                (168, 100, 168), (158, 163, 32),
+                (163, 38, 32), (180, 42, 220)]
+                alpha = 0.75
+                shape = landmark_predictor(gray, rect)
+                shape = face_utils.shape_to_np(shape)
+                
+                for (i, name) in enumerate(face_utils.FACIAL_LANDMARKS_IDXS.keys()):
+                    # grab the (x, y)-coordinates associated with the
+                    # face landmark
+                    (j, k) = face_utils.FACIAL_LANDMARKS_IDXS[name]
+                    pts = shape[j:k]
+                    # check if are supposed to draw the jawline
+                    if name == "jaw":
+                        # since the jawline is a non-enclosed facial region,
+                        # just draw lines between the (x, y)-coordinates
+                        for l in range(1, len(pts)):
+                            ptA = tuple(pts[l - 1])
+                            ptB = tuple(pts[l])
+                            cv2.line(frame, ptA, ptB, colors[i-1], 2)
+                    # otherwise, compute the convex hull of the facial
+                    # landmark coordinates points and display it
+                    else:
+                        hull = cv2.convexHull(pts)
+                        cv2.drawContours(frame, [hull], -1, colors[i-1], -1)
+                        # cv2.addWeighted(frame, alpha, frame, 1-alpha, 0, frame)
+                
+                # Drawing the additional 13 points for the forehead
+                ## Irregularly plotted so have to do it manually
+                pts = [shape[77], shape[75], shape[76], shape[68], shape[69], shape[70], shape[71],
+                       shape[80], shape[72], shape[73], shape[79], shape[74], shape[78]]
+                for l in range(1, len(pts)):
+                            ptA = tuple(pts[l - 1])
+                            ptB = tuple(pts[l])
+                            cv2.line(frame, ptA, ptB, colors[0], 2)
+            
+            cv2.imshow('frame', frame)
+
+            if cv2.waitKey(1) & 0xFF == ord(' '):
+                break
+
 
     # Pig filter
     if key == ord('p'):
 
-        while cap.isOpened() :
-            ret, frame = cap.read()
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            pig_mask = np.zeros((frame.shape[:2][0], frame.shape[:2][1], 3))
-            faces = landmark_detector(frame)
-            
-            for face in faces:
-                landmarks = landmark_predictor(gray_frame, face)
-                frame = pig_filter(frame, landmarks)
-
-            cv2.imshow('frame', frame)
-
-            # If q is pressed quit
-            if cv2.waitKey(1) & 0xFF == ord(' '):
-                print("Removing filter")
-                break
-
-    # Glasses filter
-    if key == ord('g') :
-
-        while cap.isOpened() :
-            ret, frame = cap.read()
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            pig_mask = np.zeros((frame.shape[:2][0], frame.shape[:2][1], 3))
-            faces = landmark_detector(frame)
-            
-            for face in faces:
-                landmarks = landmark_predictor(gray_frame, face)
-                frame = glasses_filter(frame, landmarks)
-
-            cv2.imshow('frame', frame)
-
-            # If q is pressed quit
-            if cv2.waitKey(1) & 0xFF == ord(' '):
-                print("Removing filter")
-                break
+        filter_function = FILTERS['p']
+        get_filters(filter_function)
     
     # Piercing filter
     if key == ord('s') :
 
-        while cap.isOpened() :
-            ret, frame = cap.read()
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            pig_mask = np.zeros((frame.shape[:2][0], frame.shape[:2][1], 3))
-            faces = landmark_detector(frame)
-            
-            for face in faces:
-                landmarks = landmark_predictor(gray_frame, face)
-                frame = piercing_filter(frame, landmarks)
-
-            cv2.imshow('frame', frame)
-
-            # If q is pressed quit
-            if cv2.waitKey(1) & 0xFF == ord(' '):
-                print("Removing filter")
-                break
+        filter_function = FILTERS['s']
+        get_filters(filter_function)
     
+    # Devil filter
+    if key == ord('d') :
+
+        filter_function = FILTERS['d']
+        get_filters(filter_function)
+    
+    # Dia de los muertos :-(
+    if key == ord('m') :
+
+        filter_function = FILTERS['m']
+        get_filters(filter_function)
+
+    # Tears filter
+    if key == ord('t') :
+
+        filter_function = FILTERS['t']
+        get_filters(filter_function)
+
+    # Glasses filter
+    if key == ord('g') :
+
+        filter_function = FILTERS['g']
+        get_filters(filter_function)
+    
+    # Quit
     if key == ord('q'):
         break
 
@@ -216,61 +167,3 @@ while cap.isOpened():
 
 cap.release()
 cv2.destroyAllWindows()
-
-
-
-
-
-
-
-# Trying to enable a filter with keyboard
-
-################################### TRY1 ###################################
-# while(cap.isOpened()):
-#     ret, frame = cap.read()
-#     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-#     pig_mask = np.zeros((img_w, img_h, 3))
-    
-#     faces = landmark_detector(frame)
-
-#     # If q is pressed quit
-#     if cv2.waitKey(1) & 0xFF == ord('q'):
-#         print("q pressed")
-#         break
-
-#     if keyboard.is_pressed('p') :
-        
-#         for face in faces:
-#             landmarks = landmark_predictor(gray_frame, face)
-#             frame = pig_filter(frame, landmarks)
-        
-#     cv2.imshow('frame', frame)
-
-################################### TRY2 ###################################
-# import tty, sys, termios
-
-# filedescriptors = termios.tcgetattr(sys.stdin)
-# tty.setcbreak(sys.stdin)
-# x = 0
-
-# while(cap.isOpened()):
-    
-#     ret, frame = cap.read()
-#     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-#     pig_mask = np.zeros((img_w, img_h, 3))
-    
-#     cv2.imshow('frame', frame)
-    
-#     print("hi!")
-#     x=sys.stdin.read(1)[0]
-#     print("hhhhhhhhi")
-
-#     while x == "p":
-#         print("If condition is met")
-
-#         x=sys.stdin.read(1)[0]
-#         print("You pressed", x)
-
-#     print("imout")
-
-# termios.tcsetattr(sys.stdin, termios.TCSADRAIN,filedescriptors)

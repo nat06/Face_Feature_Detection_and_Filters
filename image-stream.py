@@ -25,8 +25,8 @@ def main():
     models['eyedetector_haarcascades'] = cv2.CascadeClassifier(cv2.data.haarcascades  + 'haarcascade_eye_tree_eyeglasses.xml')  # load classifier 
     models['retinaface'] = RetinaFace
     models['dlibfrontalface'] = dlib.get_frontal_face_detector()
-    models['cnn_face_detection_model_v1'] = dlib.cnn_face_detection_model_v1("mmod_human_face_detector.dat")
-    models['dlib_face_features'] = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
+    models['cnn_face_detection_model_v1'] = dlib.cnn_face_detection_model_v1("models/mmod_human_face_detector.dat")
+    models['dlib_face_features'] = dlib.shape_predictor('models/shape_predictor_81_face_landmarks.dat')
     print("done generating models")
 
 
@@ -41,6 +41,7 @@ def main():
         # frame.faceAndFeaturesDetection("eyesdetection")
         # frame.retinaFacefunc()
         # frame.frontalfacedetection("nadafornow")
+        # This allows you to get the coordingate of the mouth, inner_mouth, left and right eyebrow, left and right eye, nose, jaw
         frame.face_features()
         outputframe = frame.getframe()
         # numFaces, outputframe = desiredAction("face_eyes_detection_and_blurring", inputframe)
