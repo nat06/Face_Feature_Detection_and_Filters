@@ -2,6 +2,7 @@ import cv2
 import time
 import imutils
 from imutils import face_utils
+import numpy as np
 class frameObject:
     # default constructor
     def __init__(self, inputframe, models):

@@ -37,10 +37,12 @@ def main():
         counter+=1
         ret, inputframe = cap.read()
         frame = frameObject(inputframe, models)
+        
         # frame.faceAndFeaturesDetection("eyesdetection")
         # frame.retinaFacefunc()
-        # frame.frontalfacedetection("nadafornow")
+        # frame.frontalfacedetection("")
         frame.face_features()
+
         outputframe = frame.getframe()
         cv2.imshow('Input', outputframe)
 
