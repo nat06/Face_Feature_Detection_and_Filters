@@ -7,8 +7,8 @@ from frameObject import frameObject
 from datetime import datetime
 
 # CHANGE THIS TO YOUR PATH TO INF573--Project
-path = "/home/laura/Documents/Polytechnique/MScT - M1/INF573 Image Analysis and Computer Vision/INF573 - Final Project/INF573---Project"
-os.chdir(path)
+# path = "/home/laura/Documents/Polytechnique/MScT - M1/INF573 Image Analysis and Computer Vision/INF573 - Final Project/INF573---Project"
+# os.chdir(path)
 
 class filterObject(frameObject):
 

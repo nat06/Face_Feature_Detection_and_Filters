@@ -16,8 +16,8 @@ print("Python version : ", sys.version)
 print("Libraries imported.")
 
 # CHANGE THIS TO YOUR PATH TO INF573--Project
-path = "/home/laura/Documents/Polytechnique/MScT - M1/INF573 Image Analysis and Computer Vision/INF573 - Final Project/INF573---Project"
-os.chdir(path)
+# path = "/home/laura/Documents/Polytechnique/MScT - M1/INF573 Image Analysis and Computer Vision/INF573 - Final Project/INF573---Project"
+# os.chdir(path)
 
 ########################################## Preparing models ##########################################
 
@@ -86,6 +86,38 @@ while cap.isOpened():
             outputframe = frame.getframe()
             cv2.imshow('Frame', outputframe)
             
+            if cv2.waitKey(1) & 0xFF == ord(' '):
+                print("Removing feature points")
+                break
+
+    # Blur face
+    if key == ord('b'):
+
+        while(cap.isOpened()):
+            ret, inputframe = cap.read()
+            frame = frameObject(inputframe, models)
+
+            frame.faceAndFeaturesDetection("blur")
+
+            outputframe = frame.getframe()
+            cv2.imshow('Frame', outputframe)
+
+            if cv2.waitKey(1) & 0xFF == ord(' '):
+                print("Removing feature points")
+                break
+
+    # Eye detection
+    if key == ord('e'):
+
+        while(cap.isOpened()):
+            ret, inputframe = cap.read()
+            frame = frameObject(inputframe, models)
+
+            frame.faceAndFeaturesDetection("eyesdetection")
+
+            outputframe = frame.getframe()
+            cv2.imshow('Frame', outputframe)
+
             if cv2.waitKey(1) & 0xFF == ord(' '):
                 print("Removing feature points")
                 break

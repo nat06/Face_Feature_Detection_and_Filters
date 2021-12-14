@@ -8,7 +8,9 @@ To use the program, first run `conda env create -f environment.yml`. Once all th
 
 List of keys:
 * **c** : Displays 81 feature points on the faces found in the frame.
-* **f** : Displaysa coloured in version of the 81 feature points found on each face in the frame.
+* **f** : Displays a coloured in version of the 81 feature points found on each face in the frame.
+* **b** : Blurs and boxes the face of detected users.
+* **e** : Detects and boxes the face and eyes of detected users.
 * **p** : Applies a pig nose on all the faces found in the frame.
 * **s** : Applies a septum piercing on all the faces found in the frame.
 * **d** : Applies devil horns on all the heads found in the frame.
