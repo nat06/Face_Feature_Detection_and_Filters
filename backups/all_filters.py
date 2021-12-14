@@ -141,7 +141,7 @@ while cap.isOpened():
         filter_function = FILTERS['d']
         get_filters(filter_function)
     
-    # Dia de los muertos :-(
+    # Dia de los muertos :
     if key == ord('m') :
 
         filter_function = FILTERS['m']

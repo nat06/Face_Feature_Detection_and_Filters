@@ -24,8 +24,14 @@ class frameObject:
     def getframe(self):
         return self.frame
 
+    def get_dlibfrontalface(self) :
+        return self.dlibfrontalface
+    
+    def get_dlib_face_features(self) :
+        return self.dlib_face_features
 
-    ############################ Functions modifying self.frame ############################
+
+    ##################### Functions to detect features in self.frame ######################
     
     # Haarcascades face & eyes
     def faceAndFeaturesDetection(self, modalities):
@@ -235,5 +241,15 @@ class frameObject:
                         ptA = tuple(pts[l - 1])
                         ptB = tuple(pts[l])
                         cv2.line(self.frame, ptA, ptB, colors[0], 2)
-                        
+
+        return self.frame
+
+    def display_contour(self) :
+
+        dets = self.dlibfrontalface(self.frame, 0)
+        for k, d in enumerate(dets):
+            shape = self.dlib_face_features(self.getframe(), d)
+            for num in range(shape.num_parts):
+                cv2.circle(self.frame, (shape.parts()[num].x, shape.parts()[num].y), 3, (0,255,0), 1)
+
         return self.frame
