@@ -170,8 +170,8 @@ class frameObject:
     def face_features(self):
         ''' Colour in face features from dlib '''
 
-        gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-        rects = self.dlibfrontalface(gray, 1)
+        imag_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+        rects = self.dlibfrontalface(imag_rgb, 1)
 
         for (i, rect) in enumerate(rects):
         	# determine the facial landmarks for the face region, then
