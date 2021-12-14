@@ -34,14 +34,13 @@ print("done generating models")
 #######################################################################################################
 
 
-
-
 cap = cv2.VideoCapture(0)
 
 def general_filter_func(name) :
     while cap.isOpened() :
         ret, inputframe = cap.read()
         frame = filterObject(inputframe=inputframe, models=models, name=name)
+        filter_function = frame.get_function()
 
         g_frame = cv2.cvtColor(frame.getframe(), cv2.COLOR_BGR2GRAY)
         g_frame = frameObject(inputframe=g_frame, models=models)
@@ -50,12 +49,11 @@ def general_filter_func(name) :
         faces = frame.get_dlibfrontalface()(frame.getframe())
 
         for face in faces:
-            landmarks = g_frame.get_dlib_face_features()(g_frame.getframe(), face)
-            
-            filter_function = frame.get_function()
-            frame = filter_function(frame, landmarks)
 
-        cv2.imshow('Frame', frame)
+            landmarks = g_frame.get_dlib_face_features()(g_frame.getframe(), face)
+            final_frame = filter_function(frame, landmarks)
+
+        cv2.imshow('Frame', final_frame)
 
         # If q is pressed quit
         if cv2.waitKey(1) & 0xFF == ord(' '):

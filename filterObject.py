@@ -145,8 +145,8 @@ class filterObject(frameObject):
         middle_jaw = (landmarks.part(8).x, landmarks.part(8).y)
 
         # Loading filter
-        paint = cv2.imread("filters/tats-removebg-preview.png")
-        # paint = cv2.imread('filters/snapchat-psd-snapchat-dog-effect.png')
+        # paint = cv2.imread("filters/tats-removebg-preview.png")
+        paint = cv2.imread('filters/snapchat-psd-snapchat-dog-effect.png')
         og_paint_h, og_paint_w, channels = paint.shape
         # paint = cv2.bitwise_not(paint)
         print(paint)
@@ -179,7 +179,7 @@ class filterObject(frameObject):
 
         self.frame[up_center[1] : up_center[1] + paint_height, up_center[0] : up_center[0] + paint_width] = final_frame
 
-        return self.frame
+        return final_frame
 
     def tears_filter(self, landmarks) :
 
