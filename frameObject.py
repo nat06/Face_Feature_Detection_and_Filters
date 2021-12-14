@@ -2,12 +2,11 @@ import cv2
 import time
 import numpy as np
 from imutils import face_utils
+import numpy as np
 class frameObject:
     
     # Default constructor
     def __init__(self, inputframe, models):
-        start = time.time()
-
         self.frame = inputframe
         self.roi = None
         self.numFaces = 0; self.numEyes = 0
@@ -89,7 +88,6 @@ class frameObject:
 
         # num_faces = len(resp.keys())
         h, w = self.frame.shape[:2]
-        # computing Kernel width and height for efficient blurring
         kernel_width = (w // 9) | 1
         kernel_height = (h // 9) | 1
         for face in resp.keys():
@@ -97,21 +95,16 @@ class frameObject:
             x = coordinates[0]; y = coordinates[1]
             x2 = coordinates[2]; y2 = coordinates[3]
             cv2.rectangle(self.frame, (x, y), (x2, y2), (0, 255, 0), 2)
-            # roi = self.image[y:y2, x:x2]
-            # roi = cv2.GaussianBlur(roi, (kernel_width, kernel_height), 0)
-            # impose this blurred image on original image to get final image
-            # self.frame[y:y+roi.shape[0], x:x+roi.shape[1]] = roi
 
     def frontalfacedetection(self, modalities):
+    ## perform face detection using dlib's HOG-SVM face detector, modifies self.frame ##
         imag_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-
-        # perform face detection using dlib's face detector
-        start = time.time()
-        rects = self.dlibfrontalface(imag_rgb, 1) ## 0 upsamples for speed purposes
-        end = time.time()
-        print("[INFO] dlibfrontalface took {:.4f} seconds".format(end - start))
+        # start = time.time()
+        rects = self.dlibfrontalface(imag_rgb, 0) ## 0 upsamples for speed purposes
+        # end = time.time()
+        # print("[INFO] dlibfrontalface took {:.4f} seconds".format(end - start))
         boxes = [self.convert_and_trim_bb(self.frame, r) for r in rects]
-        for (x, y, w, h) in boxes: # draw the bounding box on our image
+        for (x, y, w, h) in boxes: # draws bounding box
 	        cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 
@@ -125,7 +118,7 @@ class frameObject:
         print("[INFO] cnn_face_detection_model_v1 took {:.4f} seconds".format(end - start))
 
         boxes = [self.convert_and_trim_bb(self.frame, r.rect) for r in rects]
-        for (x, y, w, h) in boxes:  # draw the bounding box on our image
+        for (x, y, w, h) in boxes:  # draws bounding box
 	        cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
     def convert_and_trim_bb(self, image, rect):
@@ -188,14 +181,14 @@ class frameObject:
 			(168, 100, 168), (158, 163, 32),
 			(163, 38, 32), (180, 42, 220)]
             alpha = 0.75
-            start = time.time()
-            shape = self.dlib_face_features(gray, rect)
-            end = time.time()
-            print("[INFO] dlib_face_features took {:.4f} seconds".format(end - start))
+            shape = self.dlib_face_features(imag_rgb, rect)
+            # end = time.time()
+            # print("[INFO] face & face features detection took {:.4f} seconds".format(end - start))
             shape = face_utils.shape_to_np(shape)
-            # convert dlib's rectangle to a OpenCV-style bounding box
-            # [i.e., (x, y, w, h)], then draw the face bounding box
             '''
+            ## code to display face features using red circles ##
+            # convert dlib's rectangle to a OpenCV-style bounding box + text
+            # [i.e., (x, y, w, h)], then draw the face bounding box
             (x, y, w, h) = face_utils.rect_to_bb(rect)
             cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             # show the face number
@@ -208,24 +201,18 @@ class frameObject:
             '''
             # loop over the face parts individually
             # loop over the facial landmark regions individually
-            print("FACIAL_LANDMARKS_IDXS.keys() : \n", face_utils.FACIAL_LANDMARKS_IDXS.keys())
-            print( self.dlib_face_features)
             for (i, name) in enumerate(face_utils.FACIAL_LANDMARKS_IDXS.keys()):
                 # grab the (x, y)-coordinates associated with the
                 # face landmark
                 (j, k) = face_utils.FACIAL_LANDMARKS_IDXS[name]
                 pts = shape[j:k]
-                # check if are supposed to draw the jawline
                 if name == "jaw":
-                    # print()
                     # since the jawline is a non-enclosed facial region,
                     # just draw lines between the (x, y)-coordinates
                     for l in range(1, len(pts)):
                         ptA = tuple(pts[l - 1])
                         ptB = tuple(pts[l])
-                        if i == 1 :
-                            print("----- ", i, "----")
-                        cv2.line(self.frame, ptA, ptB, colors[i-1], 2)
+                        cv2.line(self.frame, ptA, ptB, colors[i-1], 4)
                 # otherwise, compute the convex hull of the facial
                 # landmark coordinates points and display it
                 else:
