@@ -92,8 +92,8 @@ while cap.isOpened():
                 print("Removing feature points")
                 break
 
-    # Rectangle around face
-    if key == ord('r'):
+    # Coloured in face (filled in features)
+    if key == ord('f'):
 
         while(cap.isOpened()):
 
